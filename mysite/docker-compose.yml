@@ -10,8 +10,8 @@ services:
       - .:/app
       - /home/ubuntu/StoreMicroserviseCart/mysite/staticfiles:/app/static
       - media_volume:/app/media
-    ports:
-      - "8003:8003"
+    expose:
+      - "8003"
     depends_on:
       - db
 
