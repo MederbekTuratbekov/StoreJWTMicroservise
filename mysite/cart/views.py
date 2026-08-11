@@ -1,5 +1,6 @@
 from rest_framework import generics, viewsets, permissions
 from rest_framework.response import Response
+from django.db import transaction  # ИЗМЕНЕНО: добавлено для атомарности
 from .models import Cart, CartItem
 from .serializers import CartSerializer, CartItemSerializer
 
@@ -26,7 +27,10 @@ class CartItemViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        cart, _ = Cart.objects.get_or_create(
-            user_id=self.request.user.id
-        )
-        serializer.save(cart=cart)
+        # ИЗМЕНЕНО: transaction.atomic() защищает от IntegrityError
+        # при двух одновременных запросах от одного user_id
+        with transaction.atomic():
+            cart, _ = Cart.objects.get_or_create(
+                user_id=self.request.user.id
+            )
+            serializer.save(cart=cart)
